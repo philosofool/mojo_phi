@@ -14,6 +14,12 @@ struct State:
             return self.amount
         raise Error("Index must be 1 or 0.")
 
+    fn __eq__(self, other: Self) -> Bool:
+        return not self != other
+
+    fn __ne__(self, other: Self) -> Bool:
+        return self.day != other.day or self.amount != other.amount
+
     fn __hash__(self) -> Int:
         return hash(SIMD[DType.float32](Float32(self.day), self.amount))
 
