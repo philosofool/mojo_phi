@@ -60,8 +60,9 @@ struct FootTruck:
         result['reward'] = result['revenue'] - result['cost']
         return result
 
-    def get_transition_prob(self, state: State, action: Int):
-        next_s_r_prob = {}
+    def get_transition_prob(self, state: State, action: Int) -> Dict[_StateProbKey, Float32]:
+        """Get state transition probabilities from state, given action."""
+        var next_s_r_prob = Dict[_StateProbKey, Float32]()
         for i in range(len(self.v_demand)):
             var demand: Float32 = self.v_demand[i]
             var result: Dict[String, Float32] = self.get_next_state_reward(state, action, demand)
@@ -69,4 +70,10 @@ struct FootTruck:
             var reward: Float32 = result['reward']
             var prob: Float32 = self.p_demand[i]
             _hash = SIMD[DType.int64](hash(state), int(reward))
-            if
+            var key = _StateProbKey(next_s, reward)
+            if key not in next_s_r_prob:
+                next_s_r_prob[key] = prob
+            else:
+                next_s_r_prob[key] += prob
+
+        return next_s_r_prob
