@@ -52,7 +52,7 @@ struct FoodTruck:
     var days: List[Int]
     var unit_cost: Float32
     var net_revenue: Float32
-    var action_space: List[Float32]
+    var action_space: List[Int]
     var state_space: List[State]
 
 
@@ -63,7 +63,7 @@ struct FoodTruck:
         self.days = List[Int](0, 1, 2, 3, 4,  5, 6)
         self.unit_cost = 4
         self.net_revenue = 7
-        self.action_space = List[Float32](0, 100, 200, 300, 400)
+        self.action_space = List[Int](0, 100, 200, 300, 400)
         self.state_space = List[State](State(0, 0.))
         for d in range(len(self.days)):
             for i in range(1, 400, 100):
