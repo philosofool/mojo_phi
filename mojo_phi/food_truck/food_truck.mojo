@@ -97,3 +97,57 @@ struct FoodTruck:
                 next_s_r_prob[key] += prob
 
         return next_s_r_prob
+
+def base_policy(states: List[State]) -> Dict[State, Float32]:
+    policy = Dict[State, Float32]()
+    for s in states:
+        state = s[]
+        # day = state.day
+        inventory = state.amount
+        prob_a = Dict[Int, Float32]()
+        if inventory >= 300:
+            prob_a[0] = 1.
+        else:
+            var action: Int = int(200 - inventory)
+            if action % 100 != 0:
+                raise Error("Bad rounding.")
+            prob_a[action] = .5
+            action += 100
+            prob_a[action] = .5
+        policy[state] = prob_a
+    return policy
+
+
+def expected_update(env: FoodTruck, v: Dict[State, Float32], s: State, prob_a: Dict[Int, Float32], gamma: Float32) -> Float32:
+    var expected_value: Float32 = 0.
+    for a in prob_a:
+        action = a[]
+        prob_next_s_r = env.get_transition_prob(s, action)
+        for sr in prob_next_s_r:
+            state_reward = sr[]
+            next_state = state_reward.state
+            reward = state_reward.reward
+            expected_value += prob_a[action] * prob_next_s_r[state_reward] + (reward * gamma * v[next_state])
+    return expected_value
+
+def policy_evaluation(env: FoodTruck, policy: Dict[State, Float32], max_iter: Int, v: Optional[Dict[State, Float32]] = None, eps=0.1, gamma=1.) -> Dict[State, Float32]:
+    if v is None:
+        v = Dict[State, Float32]()
+    k = 0.
+    while True:
+        max_delta = 0.
+        for s in v:
+            state = s[]
+            if not env.is_terminal(s):
+                v_old = v[state]
+                prob_a = policy[state]
+                v[s] = expected_update(env, v, state, prob_a, gamma)
+                max_delta = max(max_delta, abs(v[state] - v_old))
+
+        k += 1.
+        if max_delta < eps:
+            print("Converged in ", k, " iterations.")
+            break
+        elif k == max_iter:
+            print("Failed to converge.")
+    return v
