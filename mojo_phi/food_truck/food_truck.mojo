@@ -98,6 +98,11 @@ struct FoodTruck:
 
         return next_s_r_prob
 
+    def is_terminal(self, state: State) -> Bool:
+        if state.day >= 5:
+            return True
+        return False
+
 def base_policy(states: List[State]) -> Dict[State, Float32]:
     policy = Dict[State, Float32]()
     for s in states:
@@ -131,6 +136,7 @@ def expected_update(env: FoodTruck, v: Dict[State, Float32], s: State, prob_a: D
     return expected_value
 
 def policy_evaluation(env: FoodTruck, policy: Dict[State, Float32], max_iter: Int, v: Optional[Dict[State, Float32]] = None, eps=0.1, gamma=1.) -> Dict[State, Float32]:
+    """Evaluate policy in environment."""
     if v is None:
         v = Dict[State, Float32]()
     k = 0.
