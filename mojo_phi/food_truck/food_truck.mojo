@@ -1,5 +1,6 @@
 @value
 struct State:
+    """A state in the food truck problem."""
     var day: Int
     var amount: Float32
 
@@ -23,9 +24,28 @@ struct State:
     fn __hash__(self) -> Int:
         return hash(SIMD[DType.float32](Float32(self.day), self.amount))
 
+@value
+struct _StateProbKey:
+    """A KeyElement implementation for internal components of this module."""
+    var state: State
+    var reward: Float32
+
+    fn __init__(inout self, state: State, reward: Float32):
+        self.state = state
+        self.reward = reward
+
+    fn __hash__(self) -> Int:
+        return hash(SIMD[DType.int64, 2](hash(self.state), hash(self.reward)))
+
+    fn __eq__(self, other: Self) -> Bool:
+        return self.state == other.state and self.reward == other.reward
+
+    fn __ne__(self, other: Self) -> Bool:
+        return self.state != other.state or self.reward != other.reward
 
 
-struct FootTruck:
+struct FoodTruck:
+    """A model of the environment for a classic RL problem."""
     var v_demand: List[Float32]
     var p_demand: List[Float32]
     var capacity: Float32
