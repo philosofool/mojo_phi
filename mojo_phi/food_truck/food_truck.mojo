@@ -1,3 +1,5 @@
+from testing import assert_true
+
 @value
 struct State:
     """A state in the food truck problem."""
@@ -63,7 +65,7 @@ struct FoodTruck:
         self.v_demand = List[Float32](100., 200., 300., 400.)
         self.p_demand = List[Float32](.3, .4, .2, .1)
         self.capacity = self.v_demand[-1]
-        self.days = List[Int](0, 1, 2, 3, 4,  5, 6)
+        self.days = List[Int](0, 1, 2, 3, 4,  5)
         self.unit_cost = 4
         self.net_revenue = 7
         self.action_space = List[Int](0, 100, 200, 300, 400)
@@ -83,6 +85,13 @@ struct FoodTruck:
         result['revenue'] = self.net_revenue * result['sales']
         result['next_inventory'] = result['starting_inventory'] - result['sales']
         result['reward'] = result['revenue'] - result['cost']
+        # print(result['reward'])
+        if result['reward'] < -10_000:
+            for kv in result.items():
+                key = kv[].key
+                val = kv[].value
+                print(key, "  ", val)
+            print("wow.")
         return result
 
     def get_transition_prob(self, state: State, action: Int) -> Dict[_StateProbKey, Float32]:
@@ -93,6 +102,7 @@ struct FoodTruck:
             var result: Dict[String, Float32] = self.get_next_state_reward(state, action, demand)
             var next_s = State(int(result['next_day']), int(result['next_inventory']))
             var reward: Float32 = result['reward']
+            # print(reward)
             var prob: Float32 = self.p_demand[i]
             _hash = SIMD[DType.int64](hash(state), int(reward))
             var key = _StateProbKey(next_s, reward)
@@ -130,7 +140,6 @@ def base_policy(states: List[State]) -> Dict[State, Dict[Int, Float32]]:
 
 
 def expected_update(env: FoodTruck, v: Dict[State, Float32], s: State, prob_a: Dict[Int, Float32], gamma: Float32) -> Float32:
-    from testing import assert_true
     var expected_value: Float32 = 0.
     for a in prob_a.keys():
         action = a[]
@@ -142,7 +151,10 @@ def expected_update(env: FoodTruck, v: Dict[State, Float32], s: State, prob_a: D
             assert_true(action in prob_a, "Action not in prob a.")
             assert_true(state_reward in prob_next_s_r, "State-reward pair not in state_reward.")
             assert_true(next_state in v, "next state not in v: " + str(next_state))
-            expected_value += prob_a[action] * prob_next_s_r[state_reward] + (reward * gamma * v[next_state])
+            print(prob_a[action], prob_next_s_r[state_reward], (reward * gamma * v[next_state]), sep=' ')
+            expected_value += prob_a[action] * prob_next_s_r[state_reward] * (reward + gamma * v[next_state])
+
+
     return expected_value
 
 
@@ -163,8 +175,10 @@ def policy_evaluation(env: FoodTruck, policy: Dict[State, Dict[Int, Float32]], m
             state = s[]
             if not env.is_terminal(state):
                 v_old = value[state]
+                # print(v_old)
                 prob_a = policy[state]
                 value[state] = expected_update(env, value, state, prob_a, gamma)
+                # print(v_old)
                 max_delta = max(max_delta, abs(value[state] - v_old))
 
         k += 1.
