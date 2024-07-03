@@ -1,3 +1,11 @@
+"""This was the first pass at writing this RL code.
+
+It wasn't written to be optimized at all. In a few places it may be better than
+worst case optimization.
+
+We can use this file to benchmark the benefits of writing optimized mojo code.
+"""
+
 from testing import assert_true
 
 @value
