@@ -148,10 +148,6 @@ def expected_update(env: FoodTruck, v: Dict[State, Float32], s: State, prob_a: D
             state_reward = sr[]
             next_state = state_reward.state
             reward = state_reward.reward
-            assert_true(action in prob_a, "Action not in prob a.")
-            assert_true(state_reward in prob_next_s_r, "State-reward pair not in state_reward.")
-            assert_true(next_state in v, "next state not in v: " + str(next_state))
-            print(prob_a[action], prob_next_s_r[state_reward], (reward * gamma * v[next_state]), sep=' ')
             expected_value += prob_a[action] * prob_next_s_r[state_reward] * (reward + gamma * v[next_state])
 
 
@@ -162,23 +158,19 @@ def policy_evaluation(env: FoodTruck, policy: Dict[State, Dict[Int, Float32]], m
     """Evaluate policy in environment."""
     var value = Dict[State, Float32]()
     if v is None:
-        # value = Dict[State, Float32]()
         for state in env.state_space:
             value[state[]] = 0.
     else:
         value = v.value()[]
     k = 0.
-    print()
     while True:
         var max_delta: Float32 = 0.
         for s in value.keys():
             state = s[]
             if not env.is_terminal(state):
                 v_old = value[state]
-                # print(v_old)
                 prob_a = policy[state]
                 value[state] = expected_update(env, value, state, prob_a, gamma)
-                # print(v_old)
                 max_delta = max(max_delta, abs(value[state] - v_old))
 
         k += 1.
